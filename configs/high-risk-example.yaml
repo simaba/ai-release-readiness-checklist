@@ -1,0 +1,13 @@
+feature_name: ADAS intervention feature
+risk_tier: high
+checks:
+  intended_operating_conditions: true
+  known_limitations: true
+  uncertainty_handling: true
+  degraded_mode_validated: false
+  monitoring_defined: true
+  human_override_operational: true
+  incident_response_playbook: false
+  rollback_tested: false
+  accountable_approver_named: false
+  post_release_review_plan: true
