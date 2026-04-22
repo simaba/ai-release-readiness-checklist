@@ -62,9 +62,49 @@ def test_missing_required_metadata_raises(config_file):
         validate_checklist(path)
 
 
+def test_invalid_environment_raises(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["metadata"]["environment"] = "prod"
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
+def test_invalid_regulated_industry_raises(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["metadata"]["regulated_industry"] = "automotive"
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
+def test_invalid_version_format_raises(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["metadata"]["version"] = "v1"
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
 def test_unsupported_risk_classification_raises(config_file):
     bad = deepcopy(MINIMAL_CONFIG)
     bad["metadata"]["risk_classification"] = "critical"
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
+def test_accuracy_threshold_out_of_range_raises(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["model_validation"]["performance"]["accuracy_threshold"] = 1.2
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
+def test_boolean_gate_type_is_enforced(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["governance"]["approvals"]["technical_review"] = "yes"
     path = config_file(bad)
     with pytest.raises(ChecklistValidationError):
         validate_checklist(path)
