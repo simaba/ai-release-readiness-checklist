@@ -57,7 +57,7 @@ INDUSTRY_EXTRA_GATES = {
     "government": ["governance.approvals.legal_review"],
 }
 
-ALLOWED_ENVIRONMENTS = {"dev", "test", "staging", "production"}
+ALLOWED_ENVIRONMENTS = {"development", "dev", "test", "staging", "production", "sandbox"}
 ALLOWED_INDUSTRIES = {"general", "healthcare", "finance", "insurance", "government"}
 SEMVER_PATTERN = re.compile(r"^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9._-]+)?$")
 
@@ -88,7 +88,17 @@ BOOLEAN_GATE_PATHS = {
 
 NUMERIC_BOUNDED_RULES: dict[str, tuple[float, float]] = {
     "model_validation.performance.accuracy_threshold": (0.0, 1.0),
+    "model_validation.performance.precision_threshold": (0.0, 1.0),
+    "model_validation.performance.recall_threshold": (0.0, 1.0),
+    "model_validation.performance.f1_threshold": (0.0, 1.0),
     "model_validation.fairness.disparate_impact_ratio": (0.0, 10.0),
+}
+
+POSITIVE_NUMERIC_PATHS = {
+    "infrastructure.monitoring.latency_ms",
+    "infrastructure.monitoring.timeout_seconds",
+    "infrastructure.monitoring.retention_days",
+    "infrastructure.monitoring.throughput_rps",
 }
 
 
@@ -159,6 +169,15 @@ def _validate_leaf_value(path: str, value: Any) -> None:
         low, high = bounds
         if not low <= float(value) <= high:
             raise ChecklistValidationError(f"{path} must be between {low} and {high}")
+
+    if path in POSITIVE_NUMERIC_PATHS:
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            raise ChecklistValidationError(f"{path} must be a number")
+        if float(value) <= 0:
+            raise ChecklistValidationError(f"{path} must be greater than 0")
+
+    if path.endswith("_threshold") and isinstance(value, str):
+        raise ChecklistValidationError(f"{path} must be numeric, not free-form text")
 
 
 @dataclass
@@ -259,7 +278,7 @@ def validate_checklist(
 
     industry = regulated_industry
     if industry_override is not None:
-        industry = _ensure_allowed(industry_override, "regulated_industry", ALLOWED_INDUSTRIES)
+        industry = _ensure_allowed(industry_override.strip(), "regulated_industry", ALLOWED_INDUSTRIES)
 
     result = ValidationResult(
         project=project,
