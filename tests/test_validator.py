@@ -70,6 +70,14 @@ def test_invalid_environment_raises(config_file):
         validate_checklist(path)
 
 
+def test_development_environment_is_allowed(config_file):
+    good = deepcopy(MINIMAL_CONFIG)
+    good["metadata"]["environment"] = "development"
+    path = config_file(good)
+    result = validate_checklist(path)
+    assert result.environment == "development"
+
+
 def test_invalid_regulated_industry_raises(config_file):
     bad = deepcopy(MINIMAL_CONFIG)
     bad["metadata"]["regulated_industry"] = "automotive"
@@ -102,9 +110,25 @@ def test_accuracy_threshold_out_of_range_raises(config_file):
         validate_checklist(path)
 
 
+def test_threshold_cannot_be_free_form_text(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["model_validation"]["performance"]["accuracy_threshold"] = "high"
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
 def test_boolean_gate_type_is_enforced(config_file):
     bad = deepcopy(MINIMAL_CONFIG)
     bad["governance"]["approvals"]["technical_review"] = "yes"
+    path = config_file(bad)
+    with pytest.raises(ChecklistValidationError):
+        validate_checklist(path)
+
+
+def test_positive_numeric_monitoring_field_is_enforced(config_file):
+    bad = deepcopy(MINIMAL_CONFIG)
+    bad["infrastructure"]["monitoring"] = {"latency_ms": 0}
     path = config_file(bad)
     with pytest.raises(ChecklistValidationError):
         validate_checklist(path)
