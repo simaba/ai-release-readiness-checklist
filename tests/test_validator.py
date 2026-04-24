@@ -192,6 +192,12 @@ def test_result_metadata_populated(config_file):
     assert result.regulated_industry == "general"
 
 
+def test_metadata_is_not_counted_as_gate_in_strict_mode(config_file):
+    path = config_file(MINIMAL_CONFIG)
+    result = validate_checklist(path, strict=True)
+    assert all(not gate.gate.startswith("metadata.") for gate in result.gates)
+
+
 def test_invalid_yaml_raises(tmp_path):
     path = tmp_path / "bad.yaml"
     path.write_text("{invalid: yaml: content: [}", encoding="utf-8")
