@@ -15,6 +15,7 @@ class ChecklistValidationError(Exception):
 
 
 REQUIRED_SECTIONS = ["metadata", "model_validation", "governance", "infrastructure"]
+VALIDATION_SECTIONS = ["model_validation", "governance", "infrastructure", "incident_readiness"]
 
 REQUIRED_METADATA = [
     "project",
@@ -296,7 +297,7 @@ def validate_checklist(
     )
 
     collected_paths: set[str] = set()
-    for section_name in REQUIRED_SECTIONS + ["incident_readiness"]:
+    for section_name in VALIDATION_SECTIONS:
         section_value = config.get(section_name)
         if isinstance(section_value, dict):
             section_paths = _collect_paths(section_value, section_name)
